@@ -94,7 +94,7 @@ typedef struct xs_hdfsFile xs_hdfsFile_t;
 
 
 static SV *
-file_info_to_hashref(hdfsFileInfo *fi)
+file_info_to_hashref(pTHX_ hdfsFileInfo *fi)
 {
   HV *h = newHV();
   sv_2mortal((SV *)h);
@@ -104,17 +104,17 @@ file_info_to_hashref(hdfsFileInfo *fi)
   else if (fi->mKind == kObjectKindDirectory)
     hv_stores(h, "kind", newSVpvs("directory"));
   else
-    croak("Unknown HDFS object type!")
+    croak("Unknown HDFS object type!");
 
-  hv_stores(h, "name", newSVpvn(fi->mName, strlen(fi->mName)), 0);
-  hv_stores(h, "lastmod", newSVuv(fi->mLastMod), 0);
-  hv_stores(h, "size", newSViv(fi->mSize), 0);
-  hv_stores(h, "replication", newSViv(fi->mReplication), 0);
-  hv_stores(h, "blocksize", newSViv(fi->mBlockSize), 0);
-  hv_stores(h, "owner", newSVpvn(fi->mOwner, strlen(fi->mOwner)), 0);
-  hv_stores(h, "group", newSVpvn(fi->mGroup, strlen(fi->mGroup)), 0);
-  hv_stores(h, "permissions", newSViv(fi->mPermissions), 0);
-  hv_stores(h, "lastaccess", newSVuv(fi->mLastAccess), 0);
+  hv_stores(h, "name", newSVpvn(fi->mName, strlen(fi->mName)));
+  hv_stores(h, "lastmod", newSVuv(fi->mLastMod));
+  hv_stores(h, "size", newSViv(fi->mSize));
+  hv_stores(h, "replication", newSViv(fi->mReplication));
+  hv_stores(h, "blocksize", newSViv(fi->mBlockSize));
+  hv_stores(h, "owner", newSVpvn(fi->mOwner, strlen(fi->mOwner)));
+  hv_stores(h, "group", newSVpvn(fi->mGroup, strlen(fi->mGroup)));
+  hv_stores(h, "permissions", newSViv(fi->mPermissions));
+  hv_stores(h, "lastaccess", newSVuv(fi->mLastAccess));
 
   return (SV *)newRV((SV *)h);
 }
@@ -227,11 +227,12 @@ Move(src_fs, src_path, dest_fs, dest_path)
   OUTPUT: RETVAL
 
 int
-Delete(self, path)
+Delete(self, path, recursive)
     xs_hdfsFS_t *self;
     char *path;
+    int recursive = 0;
   CODE:
-    RETVAL = hdfsDelete(self->obj, path);
+    RETVAL = hdfsDelete(self->obj, path, recursive);
     if (RETVAL == -1)
       croak("Failed to delete HDFS file");
   OUTPUT: RETVAL
@@ -364,8 +365,8 @@ GetPathInfo(self, path)
     hdfsFileInfo *fileInfo;
   CODE:
     fileInfo = hdfsGetPathInfo(self->obj, path);
-    RETVAL = sv_2mortal(file_info_to_hashref(fileInfo));
-    hdfsFreeFileInfo(fileInfo);
+    RETVAL = sv_2mortal(file_info_to_hashref(aTHX_ fileInfo));
+    hdfsFreeFileInfo(fileInfo, 1);
   OUTPUT: RETVAL
 
 SV *
@@ -376,15 +377,15 @@ ListDirectory(self, path)
     hdfsFileInfo *fileInfos;
     int numInfos = 0;
     int i;
-    AV *rv;
+    AV *av;
   CODE:
     fileInfos = hdfsListDirectory(self->obj, path, &numInfos);
-    av = sv_2mortal(newAV());
+    av = (AV *)sv_2mortal((SV *)newAV());
     av_extend(av, numInfos-1);
     for (i = 0; i < numInfos; ++i)
-      av_store(av, i, file_info_to_hashref(&fileInfos[i]));
+      av_store(av, i, file_info_to_hashref(aTHX_ &fileInfos[i]));
     RETVAL = sv_2mortal(newRV((SV *)av));
-    hdfsFreeFileInfo(fileInfos);
+    hdfsFreeFileInfo(fileInfos, 1);
   OUTPUT: RETVAL
 
 

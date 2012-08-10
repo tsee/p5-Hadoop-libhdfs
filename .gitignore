@@ -1,0 +1,14 @@
+blib/
+pm_to_blib
+Makefile
+Makefile.old
+Makefile.bak
+.*.sw*
+*~
+MANIFEST
+MYMETA.*
+META.*
+*.o
+libhdfs.c
+libhdfs.bs
+hdfs.h

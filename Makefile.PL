@@ -2,8 +2,10 @@ use 5.008005;
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
-my $includes = "-I/usr/lib/jvm/java-1.6.0-sun-1.6.0.11/include -I/usr/lib/jvm/java-1.6.0-sun-1.6.0.11/include/linux -I.";
-my $libs = "-L/usr/lib/jvm/java-1.6.0-sun-1.6.0.11/jre/lib/amd64/server/ -ljvm -lhdfs";
+# my $includes = "-I/usr/lib/jvm/java-1.6.0-sun-1.6.0.11/include -I/usr/lib/jvm/java-1.6.0-sun-1.6.0.11/include/linux -I.";
+# my $libs = "-L/usr/lib/jvm/java-1.6.0-sun-1.6.0.11/jre/lib/amd64/server/ -ljvm -lhdfs";
+my $includes = "-I/usr/lib/jvm/java-1.6.0-sun-1.6.0.32.x86_64/include -I/usr/lib/jvm/java-1.6.0-sun-1.6.0.32.x86_64/include/linux -I.";
+my $libs = "-L/usr/lib/jvm/java-1.6.0-sun-1.6.0.32.x86_64/jre/lib/amd64/server/ -ljvm -lhdfs";
 WriteMakefile(
     NAME              => 'Hadoop::libhdfs',
     VERSION_FROM      => 'lib/Hadoop/libhdfs.pm', # finds $VERSION
